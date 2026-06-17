@@ -3,6 +3,7 @@ package events
 import (
 	"fmt"
 	"log/slog"
+	"runtime/debug"
 
 	"github.com/hexworks/cobalt-go/core"
 )
@@ -82,7 +83,7 @@ func (b *defaultEventBus) deliver(sub *busSubscription, event Event) {
 			if !ok {
 				err = fmt.Errorf("%v", r)
 			}
-			slog.Warn("cancelling failed subscription", "err", err)
+			slog.Warn("cancelling failed subscription", "err", err, "stack", string(debug.Stack()))
 			func() {
 				defer func() {
 					if rr := recover(); rr != nil {
@@ -144,7 +145,7 @@ type busSubscription struct {
 	disposeSt core.DisposeState
 }
 
-func (s *busSubscription) isSubscription() {}
+func (s *busSubscription) sealed() {}
 
 func (s *busSubscription) DisposeState() core.DisposeState { return s.disposeSt }
 
